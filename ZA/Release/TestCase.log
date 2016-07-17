@@ -1,0 +1,8 @@
+2016-07-17 19:41:09 ERROR - Hello world.
+2016-07-17 19:44:47 ERROR - Hello world.
+2016-07-17 19:45:26 ERROR - Hello world.
+2016-07-17 20:47:31 ERROR - Hello world.
+2016-07-17 20:47:53 INFO  - I/O exception (java.net.ConnectException) caught when processing request: Connection timed out: connect
+2016-07-17 20:47:53 INFO  - Retrying request
+2016-07-17 21:18:57 ERROR - Hello world.
+2016-07-17 21:40:18 ERROR - Hello world.
