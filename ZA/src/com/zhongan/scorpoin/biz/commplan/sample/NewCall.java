@@ -31,11 +31,15 @@ public class NewCall {
 
 		CommPlanRequest request = null;
 		if (str.equals("add")) {
-			System.out.println("投保接口 将被调用");
+			System.out.println("一、投保接口 将被调用");
 			request = new CommPlanRequest("zhongan.open.common.addPolicy");
 		} else if (str.equals("val")) {
-			System.out.println("核报接口将 被调用");
+			System.out.println("二、核报接口将 被调用");
 			request = new CommPlanRequest("zhongan.open.common.validatePolicy");
+		}
+		else if (str.equals("query")){
+			System.out.println("三、查询保单接口将 被调用");
+			request = new CommPlanRequest("zhongan.open.common.queryPolicyInfo");
 		}
 
 		request.setParams(params);
@@ -43,15 +47,14 @@ public class NewCall {
 		CommonResponse response = (CommonResponse) client.call(request);
 
 		String str_addPolicy = "[" + response.getBizContent() + "]";
-		System.out.println("投核保接口 返回bizContent :" + str_addPolicy);
-		List<AddPolicyReturnParameter> addPolicy_return = JSON.parseArray(str_addPolicy,
+		/*List<AddPolicyReturnParameter> addPolicy_return = JSON.parseArray(str_addPolicy,
 				AddPolicyReturnParameter.class);
 		if (str.equals("add")) {
 
 			String strPolicyNO = addPolicy_return.get(0).getPolicyNo();
 			System.out.println("Policy No is :" + strPolicyNO);
 			
-		}
+		}*/
 
 		return str_addPolicy;
 

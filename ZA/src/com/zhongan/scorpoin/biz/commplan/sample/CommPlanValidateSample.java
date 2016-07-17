@@ -31,10 +31,10 @@ public class CommPlanValidateSample {
                 "insureUserInfo",
                 "[{\"insureUserName\": \"雾非雾\",\"insureCertiType\": \"I\",\"insureCertiNo\": \"230404199711180492\",\"insureBirth\": \"19971118\",\"insurePhone\": \"18600000000\",\"insureRelation\":\"父子\",\"insureSex\":\"M\"}]");//被保人信息
         params.put("premium", "58");//
-        params.put("policyBeginDate", "20290709000000");//保单起期，格式yyyyMMddHHmmss
+        params.put("policyBeginDate", "20110709000000");//保单起期，格式yyyyMMddHHmmss
         params.put("channelId", "1140");//渠道id 由众安提供
         params.put("extraInfo", "");//Json格式的业务扩展字符串
-        params.put("policyEndDate", "20300708000000");
+        params.put("policyEndDate", "20120708000000");
         params.put("sumInsured", "6000");
 
         System.out.println("11111111111111111111111111");

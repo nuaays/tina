@@ -61,9 +61,15 @@ public class ValidatePolicyFullPara {
 	public String isSuccess;
 	public String errorMsg;
 	public String errorCode;
-	
+	public String productName;
 	public String bizContent;
 	
+	public String getProductName() {
+		return productName;
+	}
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
 	public String getBizContent() {
 		return bizContent;
 	}
@@ -214,6 +220,7 @@ public class ValidatePolicyFullPara {
 	public void setSumInsured(String sumInsured) {
 		this.sumInsured = sumInsured;
 	}
+	
 	
 	
 	
