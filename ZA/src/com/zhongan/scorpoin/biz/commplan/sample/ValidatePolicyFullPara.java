@@ -1,5 +1,7 @@
 package com.zhongan.scorpoin.biz.commplan.sample;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 public class ValidatePolicyFullPara {
 	public String productMask;
 	public String channelId;
@@ -221,7 +223,9 @@ public class ValidatePolicyFullPara {
 		this.sumInsured = sumInsured;
 	}
 	
-	
+	 public String toString() {
+	        return ToStringBuilder.reflectionToString(this);
+	    }
 	
 	
 }

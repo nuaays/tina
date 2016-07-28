@@ -30,11 +30,11 @@ import org.apache.log4j.Logger;
 
 public class NewTest {
 
-	static Logger logger = Logger.getLogger(NewTest.class); 
+	static Logger logger = Logger.getLogger(NewTest.class);
 	// 得到系统日期
 	static SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
 	static String str_df = df.format(new Date()).toString();
-	static Boolean test_Result= false;
+
 	public static List<ValidatePolicyFullPara> lt = new ArrayList<ValidatePolicyFullPara>();
 
 	public static List<ValidatePolicyFailPara> lt_out = new ArrayList<ValidatePolicyFailPara>();
@@ -56,7 +56,6 @@ public class NewTest {
 		Sheet sheet1 = wb.getSheetAt(0);
 
 		for (Row row : sheet1) {
-			System.out.println(row.getRowNum() + "  ");
 
 			ValidatePolicyFullPara vpp = new ValidatePolicyFullPara();
 
@@ -70,7 +69,7 @@ public class NewTest {
 			String cellContent = null;
 
 			for (Cell cell : row) {
-				
+
 				cellContent = NewTest.getStringVal(cell);
 				switch (cell.getColumnIndex()) {
 				case 1:
@@ -172,7 +171,7 @@ public class NewTest {
 
 	public static boolean write(String outPath) throws Exception {
 		String fileType = outPath.substring(outPath.lastIndexOf(".") + 1, outPath.length());
-		System.out.println(fileType);
+
 		// 创建工作文档对象
 		Workbook wb = null;
 		if (fileType.equals("xls")) {
@@ -209,13 +208,15 @@ public class NewTest {
 					cell.setCellValue(lt_out.get(i).getBizContent().toString());
 					break;
 				case 2:
-					cell.setCellValue(lt_out.get(i).getActualResult().toString());
-					break;
-				case 3:
 					cell.setCellValue(lt_out.get(i).getExpectResult().toString());
 					break;
+				case 3:
+					cell.setCellValue(lt_out.get(i).getActualResult().toString());
+					break;
 				case 4:
-					cell.setCellValue(lt_out.get(i).getRemark().toString());
+					if (lt_out.get(i).getRemark() != null) {
+						cell.setCellValue(lt_out.get(i).getRemark().toString());
+					}
 					break;
 				default:
 					break;
@@ -235,16 +236,15 @@ public class NewTest {
 		wb.close();
 		return true;
 	}
-	
-	public static void setLogPath(String logpath)
-	{
+
+	public static void setLogPath(String logpath) {
 		Properties p = new Properties();
 
 		InputStream is = ZhongAnEnvEnum.class.getResourceAsStream("log4j.properties");
 		try {
 			p.load(is);
 			System.out.println(p.getProperty("log4j.appender.R.file").toString());
-			//p.setProperty("log4j.appender.R.file", logpath+":Test.log");
+			// p.setProperty("log4j.appender.R.file", logpath+":Test.log");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -257,20 +257,14 @@ public class NewTest {
 		String writepath = null;
 
 		// 走bat传参数方式
-	    if( args.length > 0)
-		{
+		if (args.length > 0) {
 			readpath = args[0].toString();
 			writepath = args[1].toString();
-		}else
-	    {
+		} else {
 			readpath = "D:\\test\\tina\\ZA\\TestCase.xlsx";
-			writepath = "E";
-	    }
+			writepath = "E:\\ZAApp";
+		}
 
-		System.out.println("Hello World!");
-		logger.error("Hello world.");
-		
-						
 		try {
 			NewTest.read(readpath);
 		} catch (IOException e) {
@@ -278,11 +272,11 @@ public class NewTest {
 			e.printStackTrace();
 		}
 
-
 		for (int i = 1; i < lt.size(); i++) {
-	
-			System.out.println("Starting running for case" + i);
 
+			Boolean test_Result = false;
+			System.out.println("Starting running for case" + i);
+			logger.info("Starting running for case" + i);
 			if (lt.get(i).getInsureCertiNo() == null) {
 				// 身份证号自动生成
 				CertiGeneration generator = new CertiGeneration();
@@ -300,6 +294,7 @@ public class NewTest {
 			// 核保
 
 			System.out.println("Prepare the policyHolder and InsureUser for case " + i);
+			logger.info("Prepare the policyHolder and InsureUser for case " + i);
 			JSONObject policyHolderUserInfo = new JSONObject();
 
 			policyHolderUserInfo.put("policyHolderUserName", lt.get(i).getPolicyHolderUserName());
@@ -336,11 +331,11 @@ public class NewTest {
 
 			String validate_BW = validate_INFO.toString();
 			String str = "val";
+			logger.info("调用核保所传入的字符串是： " + validate_BW);
 			String response_validate = NewCall.CallOpenRequest(validate_INFO, str);
-			
 
 			System.out.println("核保 接口调用 后的方法返回的bizContent是：" + response_validate);
-
+			logger.info("核保 接口调用 后的方法返回的bizContent是：" + response_validate);
 			List<AddPolicyReturnParameter> return_para = JSON.parseArray(response_validate,
 					AddPolicyReturnParameter.class);
 			List<AddPolicyReturnParameter> exp_excel = JSON.parseArray("[" + lt.get(i).getBizContent() + "]",
@@ -352,16 +347,18 @@ public class NewTest {
 			String strExpect_valFlg = exp_excel.get(0).getIsSuccess();
 
 			if (strValFlg.equals("N")) {
+				logger.error("case" + i + "核保失败");
 				System.out.println("核保失败");
 
 			}
 
 			// 期望与实际不符的时候需要将 actual 和expected 结果 输出到excel中
 			if (strValFlg.equals(strExpect_valFlg)) {
-
+				logger.info("case" + i + "运行核保接口，实际运行结果与期望结果一致");
 				System.out.println("case" + i + "运行核保接口，实际运行结果与期望结果一致");
 			} else {
 				System.out.println("case" + i + "运行核保接口，实际运行结果与期望结果不一致， testcase 运行失败！！！！");
+				logger.error("case" + i + "运行核保接口，实际运行结果与期望结果不一致， testcase 运行失败！！！！");
 				ValidatePolicyFailPara vpfp = new ValidatePolicyFailPara();
 				vpfp.setCaseNo("case " + i);
 				vpfp.setBizContent(validate_BW.toString());
@@ -371,7 +368,7 @@ public class NewTest {
 				lt_out.add(vpfp);
 
 				try {
-					NewTest.write(writepath+":" + File.separator + "TestResult_" + str_df + ".xlsx");
+					NewTest.write(writepath + File.separator + "TestResult_" + str_df + ".xlsx");
 				} catch (IOException e) { // TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -412,96 +409,107 @@ public class NewTest {
 				String strZaOrdNo = NewCall.PaymentPolicy(merOrd, payDetail, cnfmPay, i);
 
 				// 投保
+				if (strZaOrdNo != null) {
+					str = "add";
+					validate_INFO.put("channelOrderNo", lt.get(i).getTradeNo());
+					validate_INFO.put("zaOrderNo", strZaOrdNo);
+					logger.info("投保接口调用时传入的报文是 : " + validate_INFO.toString());
+					String response_add = NewCall.CallOpenRequest(validate_INFO, str);
+					System.out.println("投保接口调用后返回的bizcont是 : " + response_add.toString());
+					logger.info("投保接口调用后返回的bizcont是 : " + response_add.toString());
 
-				str = "add";
-				validate_INFO.put("channelOrderNo", lt.get(i).getTradeNo());
-				validate_INFO.put("zaOrderNo", strZaOrdNo);
-				String response_add = NewCall.CallOpenRequest(validate_INFO, str);
-				System.out.println("投保接口调用后返回的bizcont是 : " + response_add.toString());
-				List<AddPolicyReturnParameter> add = JSON.parseArray(response_add, AddPolicyReturnParameter.class);
-				String strPolicyNo = add.get(0).getPolicyNo();
-				String addRtnFlg = add.get(0).getIsSuccess();
-				if (addRtnFlg.equals("N")) {
-					System.out.println("case" + i + "投保失败");
-				} else {
-					System.out.println("case" + i + "投保成功");
-				}
-
-				// 查询保单
-				if (addRtnFlg.equals("Y")) {
-					Thread.sleep(1000);
-					str = "query";
-					JSONObject query = new JSONObject();
-					query.put("policyNo", strPolicyNo);
-					String response_query = NewCall.CallOpenRequest(query, str);
-					System.out.println("查询保单接口调用后返回的bizcont是 : " + response_query.toString());
-					query_policy = JSON.parseArray(response_query, PolicyStatus.class);
-					if (query_policy.get(0).getIsSuccess().equals("Y")) {
-						test_Result=ResultVerfication(lt, query_policy, i);
-					}
-					else
-					{
-						System.out.println("未查询到相应保单！！");
+					List<AddPolicyReturnParameter> add = JSON.parseArray(response_add, AddPolicyReturnParameter.class);
+					String strPolicyNo = add.get(0).getPolicyNo();
+					String addRtnFlg = add.get(0).getIsSuccess();
+					if (addRtnFlg.equals("N")) {
+						System.out.println("case" + i + "投保失败");
+						logger.error("case" + i + "投保失败");
+					} else {
+						System.out.println("case" + i + "投保成功");
+						logger.info("case" + i + "投保成功");
 					}
 
-				}
+					// 查询保单
+					if (addRtnFlg.equals("Y")) {
+						Thread.sleep(3000);
+						str = "query";
+						JSONObject query = new JSONObject();
+						query.put("policyNo", strPolicyNo);
+						logger.info("查询保单接口是传入的报文是 : " + query.toString());
+						String response_query = NewCall.CallOpenRequest(query, str);
+						System.out.println("查询保单接口调用后返回的bizcont是 : " + response_query.toString());
+						logger.info("查询保单接口调用后返回的bizcont是 : " + response_query.toString());
+						query_policy = JSON.parseArray(response_query, PolicyStatus.class);
+						if (query_policy.get(0).getIsSuccess().equals("Y")) {
+							test_Result = ResultVerfication(lt, query_policy, i);
+						} else {
+							System.out.println("未查询到相应保单！！");
+							logger.error("未查询到相应保单！！");
+						}
 
-				if (test_Result){
-					System.out.println("case" +i+ "运行结束，查询保单成功！！！");
-				}
-				else
-				{
-					System.out.println("case" +i+ "运行结束，查询保单失败！！！");
-				}
-				
-				if(query_policy.get(0).getIsSuccess().equals("N")||(!test_Result)){
-				
-					ValidatePolicyFailPara vpfp = new ValidatePolicyFailPara();
-					vpfp.setCaseNo("case " + i);
-					vpfp.setBizContent(validate_BW.toString());
-					vpfp.setActualResult(query_policy.toString());
-					vpfp.setRemark("查询保单失败或者查询结果与输入值不符！！！");
-					lt_out.add(vpfp);
+					}
 
-					try {
-						NewTest.write(writepath+":" + File.separator + "TestResult_" + str_df + ".xlsx");
-					} catch (IOException e) { // TODO Auto-generated catch block
-						e.printStackTrace();
+					if (test_Result) {
+						System.out.println("case" + i + "运行结束，查询保单成功！！！");
+						logger.info("case" + i + "运行结束，查询保单成功！！！");
+					} else {
+						System.out.println("case" + i + "运行结束，查询保单失败！！！");
+						logger.error("case" + i + "运行结束，查询保单失败！！！");
+					}
+
+					if (query_policy.get(0).getIsSuccess().equals("N") || (!test_Result)) {
+
+						ValidatePolicyFailPara vpfp = new ValidatePolicyFailPara();
+						vpfp.setCaseNo("case " + i);
+						vpfp.setBizContent(validate_BW.toString());
+						vpfp.setActualResult(query_policy.toString());
+						vpfp.setExpectResult("查询保单成功");
+						vpfp.setRemark("查询保单失败或者查询结果与输入值不符！！！");
+						lt_out.add(vpfp);
+
+						try {
+							NewTest.write(writepath + File.separator + "TestResult_" + str_df + ".xlsx");
+						} catch (IOException e) { // TODO Auto-generated catch
+													// block
+							e.printStackTrace();
+						}
 					}
 				}
 			}
 
-			
 		}
 
 	}
 
 	public static Boolean ResultVerfication(List<ValidatePolicyFullPara> lt, List<PolicyStatus> query_policy, int j) {
-		/*System.out.println("1"+lt.get(j).getInsureUserName());
-		System.out.println("2"+(query_policy).get(0).getInsureUserName());
-		System.out.println("3"+lt.get(j).getPolicyHolderUserName());
-		System.out.println("4"+(query_policy).get(0).getPolicyHolderUserName());
-		System.out.println("5"+lt.get(j).getPremium());
-		System.out.println("6"+(query_policy).get(0).getPremium());
-		System.out.println("7"+lt.get(j).getSumInsured());
-		System.out.println("8"+(query_policy).get(0).getSumInsured());
-		System.out.println("9"+lt.get(j).getPolicyBeginDate());
-		System.out.println("10"+(query_policy).get(0).getPolicyBeginDate());
-		System.out.println("11"+lt.get(j).getPolicyEndDate());
-		System.out.println("12"+(query_policy).get(0).getPolicyEndDate());
-		System.out.println("13"+(query_policy).get(0).getPolicyStatus());
-		System.out.println("14"+lt.get(j).getProductName());
-		System.out.println("15"+(query_policy).get(0).getProductName());*/
-		float excel_sum= Float.parseFloat(lt.get(j).getSumInsured());
+		System.out.println("1" + lt.get(j).getInsureUserName());
+		System.out.println("2" + (query_policy).get(0).getInsureUserName());
+		System.out.println("3" + lt.get(j).getPolicyHolderUserName());
+		System.out.println("4" + (query_policy).get(0).getPolicyHolderUserName());
+		System.out.println("5" + lt.get(j).getPremium());
+		System.out.println("6" + (query_policy).get(0).getPremium());
+		System.out.println("7" + lt.get(j).getSumInsured());
+		System.out.println("8" + (query_policy).get(0).getSumInsured());
+		System.out.println("9" + lt.get(j).getPolicyBeginDate());
+		System.out.println("10" + (query_policy).get(0).getPolicyBeginDate());
+		System.out.println("11" + lt.get(j).getPolicyEndDate());
+		System.out.println("12" + (query_policy).get(0).getPolicyEndDate());
+		System.out.println("13" + (query_policy).get(0).getPolicyStatus());
+		System.out.println("14" + lt.get(j).getProductName());
+		System.out.println("15" + (query_policy).get(0).getProductName());
+		System.out.println("Excel中拼凑的保单信息为： " + lt.get(j).toString());
+		System.out.println("查询保单返回的保单信息为： " + (query_policy).get(0).toString());
+		logger.info("Excel中拼凑的保单信息为： " + lt.get(j).toString());
+		logger.info("查询保单返回的保单信息为： " + (query_policy).get(0).toString());
+		float excel_sum = Float.parseFloat(lt.get(j).getSumInsured());
 		float result_sum = Float.parseFloat((query_policy).get(0).getSumInsured());
-		
-		float excel_premium= Float.parseFloat(lt.get(j).getPremium());
+
+		float excel_premium = Float.parseFloat(lt.get(j).getPremium());
 		float result_premium = Float.parseFloat((query_policy).get(0).getPremium());
-		
+
 		return (lt.get(j).getInsureUserName()).equals((query_policy).get(0).getInsureUserName())
 				& (lt.get(j).getPolicyHolderUserName()).equals((query_policy).get(0).getPolicyHolderUserName())
-				& (excel_premium == result_premium)
-				& (excel_sum == result_sum)
+				& (excel_premium == result_premium) & (excel_sum == result_sum)
 				& (lt.get(j).getPolicyBeginDate()).equals((query_policy).get(0).getPolicyBeginDate())
 				& (lt.get(j).getPolicyEndDate()).equals((query_policy).get(0).getPolicyEndDate())
 				& ((query_policy).get(0).getPolicyStatus()).equals("核保通过")

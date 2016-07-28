@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zhongan.cashier.ConfirmPayReturn;
@@ -20,6 +22,7 @@ import zahyHttpHelp.hyHttpHelp;
 public class NewCall {
 
 	static JSONObject params = new JSONObject();
+	static Logger logger = Logger.getLogger(NewCall.class); 
 	public static String strHsfUrl;
 
 	static ZhongAnApiClient client = new ZhongAnApiClient("uat", "35c2ea3c3ea84fca9f422e5dfd991e06",
@@ -31,13 +34,16 @@ public class NewCall {
 
 		CommPlanRequest request = null;
 		if (str.equals("add")) {
-			System.out.println("一、投保接口 将被调用");
+			System.out.println("二、投保接口 将被调用");
+			logger.info("二、投保接口 将被调用");
 			request = new CommPlanRequest("zhongan.open.common.addPolicy");
 		} else if (str.equals("val")) {
-			System.out.println("二、核报接口将 被调用");
+			System.out.println("一、核报接口将 被调用");
+			logger.info("一、核报接口将 被调用");
 			request = new CommPlanRequest("zhongan.open.common.validatePolicy");
 		}
 		else if (str.equals("query")){
+			logger.info("三、查询保单接口将 被调用");
 			System.out.println("三、查询保单接口将 被调用");
 			request = new CommPlanRequest("zhongan.open.common.queryPolicyInfo");
 		}
@@ -66,6 +72,7 @@ public class NewCall {
 				"com.zhongan.cashier.dto.AddCashierOrderRequest", merOrd.toString());
 		
 		System.out.println("merchant Order----: " + response_order);
+		logger.info("merchant Order----: " + response_order);
 
 		String str = "[" + response_order + "]";
 
@@ -93,9 +100,17 @@ public class NewCall {
 		@SuppressWarnings("all")
 		List<ConfirmPayReturn> CPR = JSON.parseArray(str_payCnfm, ConfirmPayReturn.class);
 
-		System.out.println("已经为第" + i + "个case 完成支付");
-
-		return strZaOrdNo;
+		if (CPR.get(0).getIsSuccess().equals("true")){
+			System.out.println("已经为第" + i + "个case 完成支付。");
+			logger.info("已经为第" + i + "个case 完成支付。");
+			return strZaOrdNo;
+		}
+		else 
+		{
+			System.out.println("第" + i + "个case 支付失败！！！");
+			logger.error("第" + i + "个case 支付失败！！！");
+			return null;
+		}
 	}
 
 	static {
